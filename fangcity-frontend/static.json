@@ -1,0 +1,14 @@
+{
+  "root": "build/",
+  "clean_urls": true,
+  "https_only": true,
+  "routes": {
+    "/fangrunnergame/**": "/fangrunnergame/",
+    "/**": "index.html"
+  },
+  "proxies": {
+    "/game/": {
+      "origin": "https://newfangcity.herokuapp.com/fangrunnergame/"
+    }
+  }
+}

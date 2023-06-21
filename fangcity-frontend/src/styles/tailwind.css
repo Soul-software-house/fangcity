@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "The Impostor";
+  src: local("The Impostor"), url("../assets/fonts/The_Impostor.ttf") format("truetype");
+  font-weight: bold;
+}
+
+div[style*="color: rgb(189, 195, 199); bottom: 0px; display: flex; height: 1px;"] {
+  background-color: transparent !important;
+}
+
+div[style*="color: rgb(189, 195, 199); bottom: 0px; display: flex; height: 1px;"] div {
+  background-color: #6950d0 !important;
+}
+
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 15px;
+    height: auto;
+    background-color: transparent;
+    scrollbar-gutter: stable;
+    position: absolute;
+  }
+
+  .scrollbar::-webkit-scrollbar-track,
+  .scrollbar::-webkit-scrollbar-thumb {
+    border: 5px solid transparent;
+    background-clip: padding-box;
+    border-radius: 100vh;
+    width: 5px;
+    margin: 10px 0px;
+  }
+  .scrollbar::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+  .scrollbar::-webkit-scrollbar-thumb {
+    background-color: #FFFFFF;
+    
+  }
+/* 
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: gray;
+  } */
+}
