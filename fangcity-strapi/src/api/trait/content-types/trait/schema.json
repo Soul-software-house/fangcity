@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "traits",
+  "info": {
+    "singularName": "trait",
+    "pluralName": "traits",
+    "displayName": "Trait",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "series": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::serie.serie",
+      "mappedBy": "trait"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Rarity": {
+      "type": "enumeration",
+      "enum": [
+        "Common",
+        "Rare",
+        "Legendary"
+      ]
+    },
+    "Price_Awoo": {
+      "type": "biginteger"
+    },
+    "Price_Eth": {
+      "type": "float"
+    },
+    "Layer": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "Qty": {
+      "type": "integer"
+    },
+    "QtyLeft": {
+      "type": "integer"
+    },
+    "OverrideOrder": {
+      "type": "integer"
+    },
+    "RequiredTrait": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::def-trait.def-trait"
+    }
+  }
+}

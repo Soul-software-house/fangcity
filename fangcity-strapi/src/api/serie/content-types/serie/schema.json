@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "series",
+  "info": {
+    "singularName": "serie",
+    "pluralName": "series",
+    "displayName": "Serie"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Name": {
+      "type": "string"
+    },
+    "trait": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::trait.trait",
+      "inversedBy": "series"
+    }
+  }
+}

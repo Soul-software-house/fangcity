@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "def_traits",
+  "info": {
+    "singularName": "def-trait",
+    "pluralName": "def-traits",
+    "displayName": "DefTrait",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Name": {
+      "type": "string"
+    },
+    "LayerName": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::layer.layer"
+    },
+    "TraitId": {
+      "type": "string"
+    }
+  }
+}

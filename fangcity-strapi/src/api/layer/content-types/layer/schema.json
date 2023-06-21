@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "layers",
+  "info": {
+    "singularName": "layer",
+    "pluralName": "layers",
+    "displayName": "Layer"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Name": {
+      "type": "string"
+    },
+    "Order": {
+      "type": "integer"
+    }
+  }
+}
