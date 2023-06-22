@@ -51,7 +51,7 @@ export const TraitStore = () => {
     const background = temp.find(t => t.type === "background");
     const item = temp.find(t => t.type === "items");
     const result = [head, body, fur, face, background, item].filter(n => n);
-    console.log(result)
+    console.log('result', result)
     return result;
   }, [globalCart, selectedTrait]);
 

@@ -7,7 +7,7 @@ export const Modal = ({ children = null, title, modal, onClose = null }) => {
   const [globalModal, setGlobalModal] = useGlobalState("modal");
 
   useEffect(() => {
-    console.log(globalModal)
+    console.log('modal', globalModal)
   }, [globalModal])
   
 

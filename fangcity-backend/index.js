@@ -5,6 +5,7 @@ const path = require('path');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 require('dotenv').config();
+require("./mongoose");
 
 //const generate_image = require('./lib/generate_image/generate_image');
 
@@ -30,6 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // routes
 app.use('/api/generateimage', require('./routes/generateimage'));
 app.use('/api/uploadimage', require('./routes/uploadimage'));
+app.use('/api/save', require('./routes/save'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

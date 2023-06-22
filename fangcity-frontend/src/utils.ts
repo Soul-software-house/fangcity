@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Moralis from "moralis-v1";
+import Window from './types/window';
 
 export type IAccrualValue = { type: "BigNumber"; hex: string };
 export type IAccrual = [string, IAccrualValue[], IAccrualValue[], IAccrualValue];
@@ -118,6 +119,33 @@ const weiToNumber = (wei: string): number => {
   return truncateNumber(Moralis.Units.FromWei((BigInt(wei) < MIN_NUMBER ? 0 : BigInt(wei as string)).toString(), 18));
 };
 
+const getWalletId = async () : Promise<String> => {
+  if (typeof window.ethereum !== 'undefined') {
+    try{
+      // // Request access to the user's MetaMask accounts
+      await window.ethereum.enable();
+
+      // Retrieve the accounts from MetaMask
+      const accounts = await window.ethereum.request<[string]>({ method: 'eth_accounts' });
+
+      if (accounts.length > 0) {
+        return accounts[0];
+      } else {
+        // Handle case when no accounts are found
+        throw new Error('No accounts found in MetaMask.');
+      }
+    } catch(err) {  
+      if (err.code === 4001) {
+        throw new Error('Please connect to MetaMask.')
+      } else if(err.code === -32002) {
+        throw new Error('Please unlock MetaMask.')
+      } else {
+        throw new Error(err);
+      }
+    }
+  }
+}
+
 export {
   formatENSName,
   formatWalletAddress,
@@ -126,4 +154,5 @@ export {
   parseAccruals,
   truncateNumber,
   weiToNumber,
+  getWalletId, 
 };
