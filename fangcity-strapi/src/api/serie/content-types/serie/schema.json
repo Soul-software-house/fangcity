@@ -4,21 +4,32 @@
   "info": {
     "singularName": "serie",
     "pluralName": "series",
-    "displayName": "Serie"
+    "displayName": "Serie",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
-    "Name": {
+    "name": {
       "type": "string"
     },
-    "trait": {
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "traits": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "oneToMany",
       "target": "api::trait.trait",
-      "inversedBy": "series"
+      "mappedBy": "series"
     }
   }
 }

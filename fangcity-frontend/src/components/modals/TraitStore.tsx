@@ -306,6 +306,29 @@ export const TraitStore = () => {
  
   }, [fetchTraits, globalFangster, setCombined]);
 
+  // Fetch Strapi 
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // *** Change this to .env and strapi url 
+        const response = await axios.get('http://localhost:1338/api/traits');
+
+        if(response.status == 200){
+        console.log('strapi', response.data);
+        setData(response.data);
+        } else { 
+          console.log('Error fetching data from Strapi', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching data from Strapi:', error);
+      }
+    };
+    
+    fetchData();
+  }, []);
+
   return (
     <Modal title="Trait Store" modal="traitstore">
       {/* Currency Switch */}

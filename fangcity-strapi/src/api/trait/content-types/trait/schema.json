@@ -12,50 +12,74 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "series": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::serie.serie",
-      "mappedBy": "trait"
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
     },
-    "Name": {
-      "type": "string"
-    },
-    "Rarity": {
+    "rarity": {
       "type": "enumeration",
       "enum": [
         "Common",
         "Rare",
         "Legendary"
-      ]
+      ],
+      "required": true,
+      "default": "Common"
     },
-    "Price_Awoo": {
-      "type": "biginteger"
+    "priceAwoo": {
+      "type": "float",
+      "required": true
     },
-    "Price_Eth": {
-      "type": "float"
+    "priceEth": {
+      "type": "float",
+      "required": true
     },
-    "Layer": {
+    "layer": {
       "type": "media",
       "multiple": false,
       "required": true,
       "allowedTypes": [
-        "images"
+        "images",
+        "files",
+        "videos",
+        "audios"
       ]
     },
-    "Qty": {
+    "maxQuantity": {
       "type": "integer"
     },
-    "QtyLeft": {
-      "type": "integer"
+    "stock": {
+      "type": "integer",
+      "required": true
     },
-    "OverrideOrder": {
-      "type": "integer"
+    "overrideOrder": {
+      "type": "integer",
+      "required": true,
+      "default": 0
     },
-    "RequiredTrait": {
+    "noEar": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "series": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::def-trait.def-trait"
+      "relation": "manyToOne",
+      "target": "api::serie.serie",
+      "inversedBy": "traits"
+    },
+    "requiredTraits": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::trait.trait",
+      "mappedBy": "leave_this_empty"
+    },
+    "leave_this_empty": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::trait.trait",
+      "inversedBy": "requiredTraits"
     }
   }
 }
