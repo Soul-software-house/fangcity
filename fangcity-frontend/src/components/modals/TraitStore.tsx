@@ -21,6 +21,8 @@ import { inventory, series, allSeries } from "../../constants";
 import ShoppingCart from "../ShoppingCart";
 import Load from "../Load";
 
+import { getStrapiURL } from "../../utils/Strapi";
+import { getStrapiSerie } from "../../utils/StrapiParser";
 
 export const TraitStore = () => {
   const [, setModal] = useGlobalState("modal");
@@ -30,16 +32,52 @@ export const TraitStore = () => {
   const [selectFangsterPanel, setSelectFangsterPanel] = useState(false);
   const [selectedTrait, setSelectedTrait] = useState(null);
   const [seriesSelected, setSeriesSelected] = useState();
-  const [shoppingCart, ] = useState([]);
+  const [shoppingCart] = useState([]);
   const [globalCart, setGlobalCart] = useGlobalState("shoppingCart");
   const [globalFangster, setGlobalFangster] = useGlobalState("selectedFangster");
   const everyTrait = [...series, allSeries];
   const [onAddToCart, setOnAddToCart] = useState(false);
   const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(false)
-  const [ ,setCombined] = useGlobalState("combinedImgStore")
+  const [loading, setLoading] = useState(false);
+  const [, setCombined] = useGlobalState("combinedImgStore");
   const baseURL = "https://fangcityimagegen.herokuapp.com/api/generateimage/token";
-  const [, setGlobalPanel] = useGlobalState("selectFangsterPanel")
+  const [, setGlobalPanel] = useGlobalState("selectFangsterPanel");
+
+  // Fetch Strapi
+  const [traits, setTraits] = useState(null);
+  const [serie, setSeries] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const responseTraits = await axios.get(`${getStrapiURL("/api/traits?populate=layer.*,series.image.*")}`);
+        const responseSeries = await axios.get(`${getStrapiURL("/api/series?populate=image.*&sort=createdAt:desc")}`);
+
+        if (responseTraits.status === 200) {
+          console.log("Strapi Traits:", responseTraits.data);
+          setTraits(responseTraits.data);
+          
+        } else {
+          console.log("Error fetching traits from Strapi", responseTraits.status);
+        }
+
+
+        if (responseSeries.status === 200) {  
+          console.log("Strapi Series:", responseSeries.data);
+          const strapiResponse = getStrapiSerie(responseSeries.data.data);
+          // console.log("Strapi Series:", strapiResponse);
+          setSeries(strapiResponse);
+        } else {
+          console.log("Error fetching series from Strapi", responseSeries.status);
+        }
+      } catch (error) {
+        console.error("Error fetching data from Strapi:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+  
 
   const fetchTraits = useCallback(() => {
     // Get latest traits in cart + selected trait
@@ -51,7 +89,7 @@ export const TraitStore = () => {
     const background = temp.find(t => t.type === "background");
     const item = temp.find(t => t.type === "items");
     const result = [head, body, fur, face, background, item].filter(n => n);
-    console.log('result', result)
+    console.log("result", result);
     return result;
   }, [globalCart, selectedTrait]);
 
@@ -74,7 +112,7 @@ export const TraitStore = () => {
     setConfirm("apply");
     setGlobalCart(globalCart);
     setGlobalFangster(globalFangster);
-    
+
     // ADD TO GLOBAL INVENTORY
     // console.log(globalCart)
   }
@@ -199,22 +237,22 @@ export const TraitStore = () => {
 
   const NewSeries = ({ item }) => {
     // Sort by date
-    var newest = [...item].sort((a, b) => a.upload - b.upload).slice(0, 3);
+    var newest = [...item].slice(0, 3);
     // console.log(newest)
     // Sort A-Z
     const newSeriesAZ = sortAZ(newest);
 
     return (
-      <div className="flex flex-col auto">
+      <div className="auto flex flex-col">
         <h1 className="text-left text-2xl font-bold text-white">New Series</h1>
-        <div className="flex h-auto sm:flex-wrap gap-2">
+        <div className="flex h-auto gap-2 sm:flex-wrap">
           {newSeriesAZ.map((data, index) => (
             <button
               key={index}
               onClick={() => setSeriesSelected(data.name)}
               className="h-[110px] w-[95px] shrink-0 rounded-lg bg-purple-darkest px-1 pt-1 pb-2 sm:h-[150px] sm:w-[127px]"
             >
-              <img src={data.coverImg} alt={data.name} className=" rounded-lg" />
+              <img src={`${getStrapiURL(data.imageUrl)}`} alt={data.name} className=" rounded-lg" />
               <p className="mt-1 text-xxs font-bold uppercase text-white sm:text-xs">{data.name}</p>
             </button>
           ))}
@@ -239,13 +277,13 @@ export const TraitStore = () => {
                 {az === data.name[0].toUpperCase() ? (
                   <>
                     <h1 className="text-left text-2xl font-bold text-white">{az}</h1>
-                    <div key={index} className="flex sm:flex-wrap gap-2">
+                    <div key={index} className="flex gap-2 sm:flex-wrap">
                       <button
                         // key={index}
                         onClick={() => setSeriesSelected(data.name)}
                         className="h-[110px] w-[95px] shrink-0 rounded-lg bg-purple-darkest px-1 pt-1 pb-2 sm:h-[150px] sm:w-[127px]"
                       >
-                        <img src={data.coverImg} alt={data.name} className="rounded-lg" />
+                        <img src={`${getStrapiURL(data.imageUrl)}`} alt={data.name} className="rounded-lg" />
                         <p className="mt-1 text-xxs font-bold uppercase text-white sm:text-xs">{data.name}</p>
                       </button>
                     </div>
@@ -261,14 +299,13 @@ export const TraitStore = () => {
     );
   };
 
-  function setFangsterPanel(){
+  function setFangsterPanel() {
     // console.log(window.innerWidth)
-    if (window.innerWidth < 640 ){
-      setGlobalPanel(true)
-      setConfirm("selectFangsterPanel")
-    }else setSelectFangsterPanel(!selectFangsterPanel);
+    if (window.innerWidth < 640) {
+      setGlobalPanel(true);
+      setConfirm("selectFangsterPanel");
+    } else setSelectFangsterPanel(!selectFangsterPanel);
   }
-
 
   useEffect(() => {
     // setGlobalCart(shoppingCart)
@@ -291,43 +328,21 @@ export const TraitStore = () => {
   useEffect(() => {
     // console.log(globalFangster.id)
     async function fetchData() {
-      setLoading(true)
+      setLoading(true);
       const res = await axios.post(baseURL, {
-          integerInput: globalFangster && globalFangster.id,
-          objectList: fetchTraits()
-      })
+        integerInput: globalFangster && globalFangster.id,
+        objectList: fetchTraits(),
+      });
       // console.log(res.data)
-      setLoading(false)
-      setPost(res.data)
-      setCombined(`data:image/png;base64,${ res && res.data.base64Image}`)
+      setLoading(false);
+      setPost(res.data);
+      setCombined(`data:image/png;base64,${res && res.data.base64Image}`);
     }
 
     fetchData();
- 
   }, [fetchTraits, globalFangster, setCombined]);
 
-  // Fetch Strapi 
-  const [data, setData] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // *** Change this to .env and strapi url 
-        const response = await axios.get('http://localhost:1338/api/traits');
-
-        if(response.status == 200){
-        console.log('strapi', response.data);
-        setData(response.data);
-        } else { 
-          console.log('Error fetching data from Strapi', response.status);
-        }
-      } catch (error) {
-        console.error('Error fetching data from Strapi:', error);
-      }
-    };
-    
-    fetchData();
-  }, []);
 
   return (
     <Modal title="Trait Store" modal="traitstore">
@@ -336,24 +351,24 @@ export const TraitStore = () => {
         <Toggle label="ETH" label2="AWOO" toggled={toggleState} onClick={() => setToggleState(!toggleState)} />
       </div>
       {/* Main Panel */}
-      <div className="flex max-h-[calc(100%-6rem)] h-auto w-auto flex-col items-center lg:justify-between gap-2 lg:items-start lg:flex-row">
+      <div className="flex h-auto max-h-[calc(100%-6rem)] w-auto flex-col items-center gap-2 lg:flex-row lg:items-start lg:justify-between">
         {/* Left panel */}
-        <div className="flex w-full h-[210px] sm:h-[270px] lg:h-auto lg:w-auto gap-1 sm:gap-4 justify-between flex-row-reverse lg:flex-col order-first">
+        <div className="order-first flex h-[210px] w-full flex-row-reverse justify-between gap-1 sm:h-[270px] sm:gap-4 lg:h-auto lg:w-auto lg:flex-col">
           {/* Buttons  */}
-          <div className=" flex w-full flex-col justify-between shrink">
+          <div className=" flex w-full shrink flex-col justify-between">
             <button
               onClick={() => setModal("traitinventory")}
-              className="flex h-[55px] w-full items-center text-left justify-start rounded-[21px] bg-secondary-btn py-2 pr-2 pl-3 text-xs font-bold uppercase text-white ease-in hover:bg-[#FFC657] active:scale-95 lg:w-[270px] sm:px-4 sm:text-sm"
+              className="flex h-[55px] w-full items-center justify-start rounded-[21px] bg-secondary-btn py-2 pr-2 pl-3 text-left text-xs font-bold uppercase text-white ease-in hover:bg-[#FFC657] active:scale-95 sm:px-4 sm:text-sm lg:w-[270px]"
             >
               <img className=" mr-2 max-w-[25px] sm:max-w-[46px]" src={traitInventory} alt="inventory icon" />
               <span>TRAIT INVENTORY</span>
             </button>
-            
+
             <button
               onClick={() => setSelectFangsterPanel(!selectFangsterPanel)}
               className={`${
-                selectFangsterPanel  ? "bg-[#FFC657]" : "bg-secondary-btn"
-              } mt-3 hidden sm:flex h-[55px] text-left w-full items-center justify-start rounded-[21px] py-2 pr-1 pl-3 text-xs font-bold uppercase text-white ease-linear hover:bg-[#FFC657] active:scale-95 lg:w-[270px] sm:px-4 sm:text-sm`}
+                selectFangsterPanel ? "bg-[#FFC657]" : "bg-secondary-btn"
+              } mt-3 hidden h-[55px] w-full items-center justify-start rounded-[21px] py-2 pr-1 pl-3 text-left text-xs font-bold uppercase text-white ease-linear hover:bg-[#FFC657] active:scale-95 sm:flex sm:px-4 sm:text-sm lg:w-[270px]`}
             >
               <img className=" mr-2 max-w-[25px] sm:max-w-[46px]" src={selectFangsterIcon} alt="inventory icon" />
               <span>Select PxlFangster</span>
@@ -361,8 +376,8 @@ export const TraitStore = () => {
             <button
               onClick={() => setFangsterPanel()}
               className={`${
-                confirm ==="selectFangsterPanel" ? "bg-[#FFC657]" : "bg-secondary-btn"
-              } mt-3 flex sm:hidden h-[55px] w-full text-left items-center justify-start rounded-[21px] py-2 pr-1 pl-3 text-xs font-bold uppercase text-white ease-linear hover:bg-[#FFC657] active:scale-95 lg:w-[270px] sm:px-4 sm:text-sm`}
+                confirm === "selectFangsterPanel" ? "bg-[#FFC657]" : "bg-secondary-btn"
+              } mt-3 flex h-[55px] w-full items-center justify-start rounded-[21px] py-2 pr-1 pl-3 text-left text-xs font-bold uppercase text-white ease-linear hover:bg-[#FFC657] active:scale-95 sm:hidden sm:px-4 sm:text-sm lg:w-[270px]`}
             >
               <img className=" mr-2 max-w-[25px] sm:max-w-[46px]" src={selectFangsterIcon} alt="inventory icon" />
               <span>Select PxlFangster</span>
@@ -371,7 +386,7 @@ export const TraitStore = () => {
               onClick={() => setConfirm("cart")}
               className={` mt-3 bg-secondary-btn ${
                 onAddToCart ? "animate-shaking" : ""
-              } flex h-[55px] w-full items-center justify-start text-left rounded-[21px] py-2 pr-2 pl-3 text-xs font-bold uppercase text-white ease-linear hover:bg-[#FFC657] active:scale-95 lg:hidden lg:w-[270px] sm:px-4 sm:text-sm`}
+              } flex h-[55px] w-full items-center justify-start rounded-[21px] py-2 pr-2 pl-3 text-left text-xs font-bold uppercase text-white ease-linear hover:bg-[#FFC657] active:scale-95 sm:px-4 sm:text-sm lg:hidden lg:w-[270px]`}
             >
               <img className=" mr-2 max-w-[25px] sm:max-w-[46px]" src={shoppingCartIcon} alt="inventory icon" />
               <span>Shopping cart</span>
@@ -380,37 +395,32 @@ export const TraitStore = () => {
 
           {/* PxlFangster Photo */}
           <div
-            className={` relative mb-6 h-[210px] flex w-[210px] shrink-0 sm:h-[270px] sm:w-[270px] sm:${
+            className={` relative mb-6 flex h-[210px] w-[210px] shrink-0 sm:h-[270px] sm:w-[270px] sm:${
               selectFangsterPanel ? "hidden" : "flex"
             }`}
           >
-            <div className="absolute -top-7 lg:top-auto flex h-[50px] w-2/3 items-center justify-center rounded-t-xl bg-content-bg lg:-bottom-6 lg:w-[200px] lg:rounded-t-none lg:rounded-b-3xl">
-              <p className="h-full pt-2 text-xs font-semibold leading-tight text-white lg:pt-6 sm:text-[18px]">
+            <div className="absolute -top-7 flex h-[50px] w-2/3 items-center justify-center rounded-t-xl bg-content-bg lg:top-auto lg:-bottom-6 lg:w-[200px] lg:rounded-t-none lg:rounded-b-3xl">
+              <p className="h-full pt-2 text-xs font-semibold leading-tight text-white sm:text-[18px] lg:pt-6">
                 {globalFangster ? `PxlFangster #${globalFangster && globalFangster["id"]}` : "Select a PxlFangster"}
               </p>
             </div>
             <img
               className="z-10  h-full w-full rounded-3xl border-8 border-content-bg sm:mt-0"
-              src={globalFangster != null && !loading ? `data:image/png;base64,${post && post.base64Image}`  : pixlfang}
+              src={globalFangster != null && !loading ? `data:image/png;base64,${post && post.base64Image}` : pixlfang}
               alt="select pxlfang"
             />
             {loading ? (
-              <div className=" z-20 absolute opacity-75 bg-black  h-full w-full rounded-3xl border-8 border-content-bg sm:mt-0">
+              <div className=" absolute z-20 h-full w-full  rounded-3xl border-8 border-content-bg bg-black opacity-75 sm:mt-0">
                 <Load />
               </div>
             ) : (
-              <div className=" z-5 absolute bg-black  h-full w-full rounded-3xl border-8 border-content-bg sm:mt-0">
-               
-              </div>
-            ) }
-            
-            
+              <div className=" z-5 absolute h-full  w-full rounded-3xl border-8 border-content-bg bg-black sm:mt-0"></div>
+            )}
           </div>
-          
 
           {/* PxlFangster select panel */}
           <div
-            className={` h-[180px] shrink-0 lg:h-[423px] w-[160px] sm:h-[270px] sm:w-full scrollbar overflow-y-auto flex-wrap overflow-x-hidden max-w-[270px] bg-content-bg ${
+            className={` scrollbar h-[180px] w-[160px] max-w-[270px] shrink-0 flex-wrap overflow-y-auto overflow-x-hidden bg-content-bg sm:h-[270px] sm:w-full lg:h-[423px] ${
               selectFangsterPanel ? "flex" : "hidden"
             }  content-start gap-1 rounded-3xl p-2 sm:p-3`}
           >
@@ -465,13 +475,13 @@ export const TraitStore = () => {
         {/* SERIES PANEL */}
 
         {!seriesSelected ? (
-          <div className="scrollbar flex flex-row sm:flex-col order-last h-full min-h-[180px] sm:min-h-0 w-full min-w-[270px] lg:flex-auto lg:flex-shrink-0 gap-[0.3rem] overflow-x-auto sm:overflow-y-auto rounded-3xl bg-content-bg px-2 pt-2 pb-2 lg:order-none lg:mt-0 lg:h-full sm:max-h-[563px] sm:w-[580px] sm:py-4 sm:pr-0 sm:pl-4">
+          <div className="scrollbar order-last flex h-full min-h-[180px] w-full min-w-[270px] flex-row gap-[0.3rem] overflow-x-auto rounded-3xl bg-content-bg px-2 pt-2 pb-2 sm:max-h-[563px] sm:min-h-0 sm:w-[580px] sm:flex-col sm:overflow-y-auto sm:py-4 sm:pr-0 sm:pl-4 lg:order-none lg:mt-0 lg:h-full lg:flex-auto lg:flex-shrink-0">
             {/* Map New Series - MAX 3 */}
-            <NewSeries item={series} />
-            <SeriesAZ item={everyTrait} />
+            <NewSeries item={serie} />
+            <SeriesAZ item={serie} />
           </div>
         ) : (
-          <div className=" order-last h-full min-h-0 flex w-full items-stretch max-w-[580px] lg:order-none ">
+          <div className=" order-last flex h-full min-h-0 w-full max-w-[580px] items-stretch lg:order-none ">
             <Tabs
               back={setSeriesSelected}
               cart={shoppingCart}
@@ -486,8 +496,10 @@ export const TraitStore = () => {
         {/* Right panel */}
         <div className="flex w-full flex-none flex-col lg:w-auto ">
           {/* Trait details */}
-          <div className="h-[122px] sm:h-[147px] w-full rounded-2xl bg-content-bg py-2 px-4 lg:max-w-[270px]">
-            <h2 className="w-full hidden sm:block text-left text-[11px] font-bold uppercase text-white">Trait details</h2>
+          <div className="h-[122px] w-full rounded-2xl bg-content-bg py-2 px-4 sm:h-[147px] lg:max-w-[270px]">
+            <h2 className="hidden w-full text-left text-[11px] font-bold uppercase text-white sm:block">
+              Trait details
+            </h2>
             <div className="mt-2 flex gap-3">
               <div className="relative flex h-[82px] w-[82px] shrink-0 overflow-clip rounded-lg bg-[#E1C9FF]">
                 <div className="absolute top-0 right-0 block pt-4 pr-4">
