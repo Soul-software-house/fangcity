@@ -1,4 +1,5 @@
 import React from 'react'
+import { getStrapiURL } from "../utils/Strapi";
 
 const ShoppingCart = ({shoppingCart, testNE, silhouetteNE, silhouette, toggleState, remove, removeTrait, title, inventory}) => {
 
@@ -31,7 +32,7 @@ const ShoppingCart = ({shoppingCart, testNE, silhouetteNE, silhouette, toggleSta
                 <div className="mt-2 flex gap-3" key={index}>
                   <div className="relative flex h-[82px] w-[82px] shrink-0 items-start overflow-clip rounded-lg bg-[#E1C9FF]">
                     <img src={testNE(item.name) ? silhouetteNE : silhouette} alt="silhouette" className={`absolute top-0 z-10 h-[82px] w-[82px] leading-[20px]`} />
-                    <img src={item.img} alt="traitImg" className={`relative top-0 w-[82px] rounded-lg ${item.type === 'background' ? 'z-0' : 'z-20'}`} />
+                    <img src={`${getStrapiURL(item.image)}`} alt="traitImg" className={`relative top-0 w-[82px] rounded-lg ${item.type === 'background' ? 'z-0' : 'z-20'}`} />
                   </div>
                   <div className="inline-block w-full text-left">
                     <h3 className="text-base font-bold text-white">{item.name}</h3>
@@ -43,13 +44,13 @@ const ShoppingCart = ({shoppingCart, testNE, silhouetteNE, silhouette, toggleSta
                         (
                           <>
                             <p className="text-[11px] font-light text-white">
-                              Quantity: {item.quantity} /{item.supply}{" "}
+                              Quantity: {item.quantity} /{item.maxQuantity}{" "}
                             </p>
                           </>
                         ) : (
                           <>
                             <p className="text-[11px] font-light text-white">
-                              Quantity: {item.quantity} /{item.supply}{" "}
+                              Quantity: {item.quantity} /{item.maxQuantity}{" "}
                             </p>
                             <p className="text-[11px] font-bold text-white">
                               {!toggleState ? item && item.priceAWOO + " AWOO" : item && item.priceETH + "ETH"}

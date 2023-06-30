@@ -22,7 +22,7 @@ import ShoppingCart from "../ShoppingCart";
 import Load from "../Load";
 
 import { getStrapiURL } from "../../utils/Strapi";
-import { getStrapiSerie } from "../../utils/StrapiParser";
+import { getStrapiSerie, getStrapiTraits } from "../../utils/StrapiParser";
 
 export const TraitStore = () => {
   const [, setModal] = useGlobalState("modal");
@@ -50,23 +50,23 @@ export const TraitStore = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const responseTraits = await axios.get(`${getStrapiURL("/api/traits?populate=layer.*,series.image.*")}`);
+        const responseTraits = await axios.get(`${getStrapiURL("/api/traits?populate=image.*,series.image.*,requiredTraits.*")}`);
         const responseSeries = await axios.get(`${getStrapiURL("/api/series?populate=image.*&sort=createdAt:desc")}`);
 
         if (responseTraits.status === 200) {
-          console.log("Strapi Traits:", responseTraits.data);
-          setTraits(responseTraits.data);
+
+          const strapiResponse = getStrapiTraits(responseTraits.data.data);
+          setTraits(strapiResponse);
           
         } else {
           console.log("Error fetching traits from Strapi", responseTraits.status);
         }
 
-
         if (responseSeries.status === 200) {  
-          console.log("Strapi Series:", responseSeries.data);
+
           const strapiResponse = getStrapiSerie(responseSeries.data.data);
-          // console.log("Strapi Series:", strapiResponse);
           setSeries(strapiResponse);
+          
         } else {
           console.log("Error fetching series from Strapi", responseSeries.status);
         }
@@ -145,12 +145,12 @@ export const TraitStore = () => {
 
   function addToBasket(item) {
     // console.log("add to basket");
-    if (item.totalMint < 1) {
+    if (item.stock < 1) {
       return null;
     } else if (elementCount(globalCart, item) === 0) {
       item.quantity = 1;
       setGlobalCart(globalCart => [item, ...globalCart]);
-      item.totalMint = item.totalMint - 1;
+      item.stock = item.stock - 1;
       // console.log(shoppingCart)
       return null;
     } else {
@@ -158,7 +158,7 @@ export const TraitStore = () => {
       var res = Array.from(new Set(globalCart));
       setGlobalCart([...res]);
       // console.log(res);
-      item.totalMint = item.totalMint - 1;
+      item.stock = item.stock - 1;
     }
   }
 
@@ -489,6 +489,7 @@ export const TraitStore = () => {
               store={true}
               selectedTrait={setSelectedTrait}
               series={seriesSelected}
+              triats={traits}
             />
           </div>
         )}
@@ -517,7 +518,7 @@ export const TraitStore = () => {
                   className={`top-0 z-10 h-[82px]  w-[82px] ${selectedTrait ? "block" : "hidden"} `}
                 />
                 <img
-                  src={selectedTrait ? selectedTrait && selectedTrait.img : pixlfang}
+                  src={selectedTrait ? selectedTrait && `${getStrapiURL(selectedTrait.image)}` : pixlfang}
                   alt="traitImg"
                   className={`absolute top-0 w-[82px] ${
                     selectedTrait && selectedTrait.type === "background" ? "z-0" : "z-20"
@@ -538,7 +539,7 @@ export const TraitStore = () => {
                       {selectedTrait ? (selectedTrait.rarity === "oneone" ? "1/1" : selectedTrait.rarity) : null}
                     </p>
                     <p className="text-[11px] font-light text-white">
-                      Supply: {selectedTrait && selectedTrait.totalMint}/{selectedTrait && selectedTrait.supply}{" "}
+                      Supply: {selectedTrait && selectedTrait.stock}/{selectedTrait && selectedTrait.maxQuantity}{" "}
                     </p>
                     <p className="text-[11px] font-bold text-white">
                       {!toggleState

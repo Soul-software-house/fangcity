@@ -5,8 +5,10 @@ import lock from "../assets/images/store/Lock.svg";
 import { data, testData} from '../constants'
 import silhouette from '../assets/images/store/placeholder.svg'
 import silhouetteNE from '../assets/images/store/Placeholder_NE.svg'
+import { getStrapiURL } from "../utils/Strapi";
 
-const Tabs = ({ back, selectedTrait, series, inventory, store, cart }) => {
+const Tabs = ({ back, selectedTrait, series, inventory, store, cart, triats }) => {
+
   const [activeTab, setActiveTab] = useState("head");
   const [, setConfirm] = useGlobalState("confirm");
   const [, setTrait] = useGlobalState("selectedTrait")
@@ -21,9 +23,9 @@ const Tabs = ({ back, selectedTrait, series, inventory, store, cart }) => {
     back(false);
   };
 
-  function checkSoldOut(totalMint:any, supply:any) {
+  function checkSoldOut(stock:any, maxQuantity:any) {
     if (store){
-      if (totalMint < 1 ) {
+      if (stock < 1 ) {
       return true
     } else {
       return false
@@ -164,23 +166,24 @@ const Tabs = ({ back, selectedTrait, series, inventory, store, cart }) => {
         <div className="flex sm:flex-wrap sm:flex-1 min-h-[85px] sm:items-stretch  gap-2 pl-0.5 py-1 overflow-x-auto sm:overflow-y-auto scrollbar">
           
           {/* Trait Card */}
-          { testData.map((data) => (
-              data.type === activeTab && (data.series === series || series === "all series") ?   
+          { triats.map((data) => (
+              data.type.toLowerCase() === activeTab.toLowerCase()
+              && (data.serie === series || series === "all series") ?   
                 <button
                 key={data.name}
                 onClick={() => selectedTrait(data)}
                 // onFocus={() =>  selectedTrait(data)}
                 onBlur={() => selectedTrait(null)}
-                disabled={(data.inventory && inventory) || (checkTrait(data) && inventory) || checkLocked(data.traitPrerequisite)}
+                disabled={(data.inventory && inventory) || (checkTrait(data) && inventory) || checkLocked(data.requiredTraits)}
                 className={` ${
-                  checkLocked(data.traitPrerequisite) || checkSoldOut(data.totalMint, data.supply)
+                  checkLocked(data.requiredTraits) || checkSoldOut(data.maxQuantity, data.maxQuantity)
                     ? "cursor-default focus:outline-none "
                     : "cursor-pointer focus:outline-dashed focus:outline-[3px] focus:outline-white"
                 }  relative shrink-0 z-10 h-[95px] w-[95px] sm:h-[165px] sm:w-[165px] overflow-clip group
                 rounded-lg border-[5px] bg-[#E1C9FF] ${borderRarity(data)}`}
               >
                 <img src={testNE(data.name) ? silhouetteNE : silhouette } alt="silhouette" className="z-10 relative top-0 left-0 right-0 align-bottom block" />
-                <img src={data.img} alt={data.name} className={`absolute block top-0 left-0 right-0 w-full ${data.type === 'background' ? 'z-0' : 'z-20'}`} />
+                <img src={`${getStrapiURL(data.image)}`} alt={data.name} className={`absolute block top-0 left-0 right-0 w-full ${data.type === 'background' ? 'z-0' : 'z-20'}`} />
 
                 {/* Not Off-chain case */}
                 { data.inventory && inventory  ? 
@@ -205,7 +208,7 @@ const Tabs = ({ back, selectedTrait, series, inventory, store, cart }) => {
                 <a
                   href={data.link}
                   className={` ${
-                    checkSoldOut(data.totalMint, data.supply) ? "flex" : "hidden"
+                    checkSoldOut(data.stock, data.maxQuantity) ? "flex" : "hidden"
                   } absolute top-0 h-full w-full items-center justify-center bg-black opacity-80 z-50`}
                 >
                   <p className="text-[11px] text-white">
@@ -215,7 +218,7 @@ const Tabs = ({ back, selectedTrait, series, inventory, store, cart }) => {
                   </p>
                 </a>
                 {/* LOCKED TRAIT */}
-                <div className={` ${ checkLocked(data.traitPrerequisite) && !checkSoldOut(data.totalMint, data.supply) ? "block" : "hidden" } peer absolute top-2 right-2 z-50 cursor-pointer`}>
+                <div className={` ${ checkLocked(data.requiredTraits) && !checkSoldOut(data.stock, data.maxQuantity) ? "block" : "hidden" } peer absolute top-2 right-2 z-50 cursor-pointer`}>
                   <img src={lock} alt="locked" className="sm:w-auto w-[15px]" />
                 </div>
                 <div
@@ -227,7 +230,7 @@ const Tabs = ({ back, selectedTrait, series, inventory, store, cart }) => {
                     Hold one of these traits to unlock:
                   </p>
                   <ul className=" text-[8px] sm:text-[11px] text-white">
-                    {data.traitPrerequisite.map((point, index) => (
+                    {data.requiredTraits.map((point, index) => (
                       <li key={index} className=" capitalize" >- {point}</li>
                     ))}
                   </ul>

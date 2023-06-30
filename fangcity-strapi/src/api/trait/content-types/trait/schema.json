@@ -35,7 +35,7 @@
       "type": "float",
       "required": true
     },
-    "layer": {
+    "image": {
       "type": "media",
       "multiple": false,
       "required": true,
@@ -80,6 +80,18 @@
       "relation": "manyToMany",
       "target": "api::trait.trait",
       "inversedBy": "requiredTraits"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "Head",
+        "Face",
+        "Body",
+        "Fur",
+        "Background",
+        "Items"
+      ],
+      "required": true
     }
   }
 }

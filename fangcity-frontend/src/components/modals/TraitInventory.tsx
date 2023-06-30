@@ -198,8 +198,9 @@ export const TraitInventory = () => {
     // console.log(azArray)
 
     return (
+      // *** Missing keys warning 
       <>
-        {sorted.map((data) => (
+        {sorted.map((data, sortIndex) => (
           <div className="h-auto">
             {azArray.map((az, index) => (
               <>
@@ -403,7 +404,15 @@ export const TraitInventory = () => {
           </div>
           ) : (
           <div className=" order-last relative flex-col h-full min-h-0 flex w-full items-stretch max-w-[580px] lg:order-none">
-            <Tabs back={setSeriesSelected} inventory={true} store={false} cart={globalSelection} selectedTrait={setSelectedTrait} series={seriesSelected} />
+            <Tabs 
+            back={setSeriesSelected}
+             inventory={true}
+              store={false} 
+              cart={globalSelection} 
+              selectedTrait={setSelectedTrait} 
+              series={seriesSelected} 
+              triats={[]}
+              />
             <p className="hidden absolute sm:block -bottom-9 text-[10px] font-normal text-white text-left px-4 pt-2">If you minted a trait as an NFT or bought one on a secondary market, before you can apply it to a Super PxlFangster, import it to your inventory by burning the NFT. All traits are minted on Polygon.</p>
           </div>
         )}
